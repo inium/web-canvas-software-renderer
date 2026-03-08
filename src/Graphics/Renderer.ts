@@ -2,7 +2,6 @@ import BufferSet from "./Scene/Buffers/BufferSet";
 import Vector3 from "./Math/Vector3";
 import Vector4 from "./Math/Vector4";
 import Camera from "./Scene/Camera";
-import Frustum from "./Scene/Frustum";
 import RenderObject from "./Scene/RenderObject";
 import Matrix4x4 from "./Math/Matrix4x4";
 import MathUtil from "./Math/Util";
@@ -30,13 +29,6 @@ export default class Renderer {
     private _height: number = 0;
 
     /**
-     * 카메라
-     *
-     * @type {Camera}
-     */
-    camera: Camera;
-
-    /**
      * 버퍼
      *
      * @type {BufferSet}
@@ -54,14 +46,6 @@ export default class Renderer {
     constructor(width: number, height: number, sampleLevel: number = 2) {
         this._width = width;
         this._height = height;
-
-        // 카메라 초기화
-        this.camera = new Camera(
-            new Vector3(0, 0, 5),
-            new Vector3(0, 0, 0),
-            new Vector3(0, 1, 0),
-            new Frustum(60.0, width / height, 0.1, 1000.0),
-        );
 
         // 버퍼 초기화
         this.bufferSet = new BufferSet(width, height, sampleLevel);
@@ -83,12 +67,17 @@ export default class Renderer {
      * 렌더링 함수
      *
      * @param {RenderObject} renderObject 렌더링할 객체
+     * @param {Camera} camera 렌더링에 사용할 카메라
      */
-    render(renderObject: RenderObject) {
+    render(
+        renderObject: RenderObject,
+        camera: Camera,
+        color = new Color(0, 0, 0),
+    ): void {
         const modelMatrix = renderObject.modelMatrix();
-        const viewMatrix = this.camera?.viewMatrix() || Matrix4x4.identity();
+        const viewMatrix = camera.viewMatrix() || Matrix4x4.identity();
         const projectionMatrix =
-            this.camera?.projectionMatrix() || Matrix4x4.identity();
+            camera.projectionMatrix() || Matrix4x4.identity();
 
         const modelView = viewMatrix.multiply(modelMatrix);
         const mvp = projectionMatrix.multiply(modelView);
@@ -142,17 +131,17 @@ export default class Renderer {
                         new Point(
                             new Vector2(screen[0].x, screen[0].y),
                             ndc[0].z,
-                            new Color(255, 0, 0),
+                            color,
                         ),
                         new Point(
                             new Vector2(screen[1].x, screen[1].y),
                             ndc[1].z,
-                            new Color(0, 255, 0),
+                            color,
                         ),
                         new Point(
                             new Vector2(screen[2].x, screen[2].y),
                             ndc[2].z,
-                            new Color(0, 0, 255),
+                            color,
                         ),
                     ),
                 );
@@ -356,9 +345,11 @@ export default class Renderer {
         const edge2 = v2.subtract(v0);
         const normal = edge1.cross(edge2);
 
-        const viewDir = this.camera?.eye.subtract(v0) || new Vector3(0, 0, 0);
+        // view space에서 카메라 위치는 (0,0,0)
+        const viewDir = new Vector3(0, 0, 0).subtract(v0);
 
-        return normal.dot(viewDir) < 0;
+        // winding 규약에 따라 부호가 반대일 수 있음
+        return normal.dot(viewDir) > 0;
     }
 
     /**
