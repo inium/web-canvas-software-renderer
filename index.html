@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Canvas Software Renderer</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body class="overflow-x-auto overflow-y-hidden">
+    <div class="mx-auto my-4 w-7xl" x-data="{ scale: 1, grid: true }">
+      <div class="text-xl my-4">Web Canvas Software Renderer</div>
+
+      <div class="border border-gray-300">
+        <div class="flex w-7xl">
+          <div class="h-192 w-5xl flex-none">
+            <canvas id="canvas" width="1024" height="768" class="canvas">
+              Your browser doesn't appear to support the HTML5
+              <code>&lt;canvas&gt;</code> element.
+            </canvas>
+          </div>
+
+          <div class="h-192 w-64 flex-none p-4">
+            <div class="mb-3 font-semibold text-gray-700">
+              Renderer Control Panel
+            </div>
+            <label class="mb-2 flex items-center gap-2 text-sm">
+              <input type="checkbox" x-model="grid" />
+              <span>Show grid</span>
+            </label>
+            <div class="mb-2 text-sm">
+              Zoom: <span x-text="scale.toFixed(1)"></span>x
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="rounded bg-gray-800 px-3 py-1 text-white"
+                @click="scale = Math.max(0.5, scale - 0.1)"
+              >
+                -
+              </button>
+              <button
+                type="button"
+                class="rounded bg-gray-800 px-3 py-1 text-white"
+                @click="scale = Math.min(2, scale + 0.1)"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+      import Renderer from "/src/Graphics/Renderer.ts";
+      import RenderObject from "/src/Graphics/Scene/RenderObject.ts";
+      import Vector3 from "/src/Graphics/Math/Vector3.ts";
+      import ObjLoader from "/src/Graphics/Mesh/ObjLoader.ts";
+      import ImageCanvas from "/src/ImageCanvas.ts";
+
+      // Mesh 설정
+      const renderObject = new RenderObject();
+
+      renderObject.mesh = await ObjLoader.load(
+        "/public/Assets/Tiger/tiger.obj",
+      );
+      renderObject.position = new Vector3(0, 0, 0);
+      renderObject.rotation = new Vector3(-10, -90, 0);
+      renderObject.scale = new Vector3(0.1, 0.1, 0.1);
+
+      const width = 1024;
+      const height = 768;
+
+      const renderer = new Renderer(width, height, 2);
+
+      // camera 설정
+      renderer.camera.eye = new Vector3(0, 0, 50);
+      renderer.camera.at = new Vector3(0, 0, 0);
+      renderer.camera.up = new Vector3(0, 1, 0);
+      renderer.camera.frustum.fov = 60;
+      renderer.camera.frustum.aspect = width / height;
+      renderer.camera.frustum.near = 0.1;
+      renderer.camera.frustum.far = 1000;
+
+      renderer.clear(245, 245, 245);
+      renderer.render(renderObject);
+
+      // --------------------------------------------------------
+
+      const canvas = document.getElementById("canvas");
+
+      const imageCanvas = new ImageCanvas(canvas, width, height);
+
+      // FrameBuffer -> ImageCanvas 복사
+      const frameBuffer = renderer.bufferSet.frameBuffer;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const c = frameBuffer.getPixel(x, y);
+          if (!c) {
+            continue;
+          }
+
+          imageCanvas.setPixel(x, y, c.r, c.g, c.b, c.a ?? 255);
+        }
+      }
+
+      imageCanvas.render();
+    </script>
+  </body>
+</html>
