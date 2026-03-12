@@ -22,13 +22,6 @@ export default class Mesh {
      */
     indices: number[][];
 
-    // /**
-    //  * 텍스처 이미지
-    //  *
-    //  * @type {HTMLImageElement | null}
-    //  */
-    // textureImage: HTMLImageElement | null = null;
-
     /**
      * Creates an instance of Mesh.
      *
@@ -40,8 +33,4 @@ export default class Mesh {
         this.vertices = vertices;
         this.indices = indices;
     }
-
-    // loadTexture(image: HTMLImageElement) {
-    //     this.textureImage = image;
-    // }
 }
