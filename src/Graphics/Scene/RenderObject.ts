@@ -1,6 +1,7 @@
 import Mesh from "../Mesh/Mesh";
 import Vector3 from "../Math/Vector3";
 import Matrix4x4 from "../Math/Matrix4x4";
+import Material from "./Material";
 
 export default class RenderObject {
     /**
@@ -9,6 +10,13 @@ export default class RenderObject {
      * @type {Mesh}
      */
     mesh: Mesh;
+
+    /**
+     * 재질 (Material)
+     *
+     * @type {Material}
+     */
+    material: Material = new Material();
 
     /**
      * 위치 (Translation)
@@ -40,9 +48,13 @@ export default class RenderObject {
 
     constructor(
         mesh: Mesh,
+        material: Material | null = null,
         // public texture: Texture | null = null,
     ) {
         this.mesh = mesh;
+        if (material) {
+            this.material = material;
+        }
     }
 
     /**
