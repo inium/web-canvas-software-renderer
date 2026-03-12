@@ -11,10 +11,9 @@ export default class Matrix4x4 {
     /**
      * 행렬 요소 배열
      *
-     * @private
      * @type {number[]}
      */
-    private elements: number[];
+    elements: number[];
 
     /**
      * Creates an instance of Matrix4x4.
