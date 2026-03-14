@@ -13,15 +13,35 @@ import Triangle from "./Geometry/Triangle";
 import Light from "./Scene/Light";
 import Material from "./Scene/Material";
 
+/**
+ * 셰이딩 타입 (phong, gouraud, flat)
+ * - flat: 삼각형 단위로 조명 계산 (가장 단순하지만 가장 덜 사실적)
+ * - gouraud: 정점 단위로 조명 계산 후 보간 (중간 정도의 사실감과 계산량)
+ * - phong: 픽셀 단위로 조명 계산 (가장 사실적이지만 계산량 많음)
+ */
 export type ShaderType = "phong" | "gouraud" | "flat";
 
+/**
+ * PointSet 타입 정의
+ * - p: 화면 좌표계에서의 위치 (Point 객체)
+ * - vp: view space에서의 위치 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
+ * - vn: view space에서의 법선 벡터 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
+ * - intensity: 조명 계산 결과로 나온 밝기 (0-1 사이의 값)
+ */
 type PointSet = {
-    p: Point; // 화면 좌표계에서의 위치
-    vp: Vector3; // view space에서의 위치 (래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
-    vn: Vector3; // view space에서의 법선 벡터 (래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
-    intensity: number; // 조명 계산 결과로 나온 밝기 (0-1 사이의 값)
+    p: Point;
+    vp: Vector3;
+    vn: Vector3;
+    intensity: number;
 };
 
+/**
+ * ClipVertex 타입 정의
+ * - clip: 클립 공간 좌표 (Vector4, x, y, z, w)
+ * - vp: view space에서의 위치 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
+ * - vn: view space에서의 법선 벡터 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
+ * - intensity: 조명 계산 결과로 나온 밝기 (0-1 사이의 값)
+ */
 type ClipVertex = {
     clip: Vector4;
     vp: Vector3;
@@ -29,6 +49,12 @@ type ClipVertex = {
     intensity: number;
 };
 
+/**
+ * ShadingSet 타입 정의
+ * - viewMatrix: 모델뷰 행렬 (Matrix4x4, 조명 계산에 필요한 뷰 공간으로의 변환 정보)
+ * - light: 광원 정보 (Light 객체, 조명 계산에 필요한 광원 방향과 색상 정보)
+ * - material: 재질 정보 (Material 객체, 조명 계산에 필요한 재질 특성 정보)
+ */
 type ShadingSet = {
     viewMatrix: Matrix4x4;
     light: Light;
