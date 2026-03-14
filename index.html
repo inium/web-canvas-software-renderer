@@ -53,18 +53,21 @@
 
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
+      import Camera from "/src/Graphics/Scene/Camera.ts";
+      import Frustum from "/src/Graphics/Scene/Frustum.ts";
+      import Light from "/src/Graphics/Scene/Light.ts";
+      // import Material from "/src/Graphics/Scene/Material.ts";
       import Renderer from "/src/Graphics/Renderer.ts";
       import RenderObject from "/src/Graphics/Scene/RenderObject.ts";
       import Vector3 from "/src/Graphics/Math/Vector3.ts";
+      import Color from "/src/Graphics/Common/Color.ts";
       import ObjLoader from "/src/Graphics/Mesh/ObjLoader.ts";
       import ImageCanvas from "/src/ImageCanvas.ts";
 
       // Mesh 설정
+      const path = "/public/models/tiger/tiger.obj";
       const renderObject = new RenderObject();
-
-      renderObject.mesh = await ObjLoader.load(
-        "/public/models/tiger/tiger.obj",
-      );
+      renderObject.mesh = await ObjLoader.load(path);
       renderObject.position = new Vector3(0, 0, 0);
       renderObject.rotation = new Vector3(-10, -90, 0);
       renderObject.scale = new Vector3(0.1, 0.1, 0.1);
@@ -74,17 +77,28 @@
 
       const renderer = new Renderer(width, height, 2);
 
-      // camera 설정
-      renderer.camera.eye = new Vector3(0, 0, 50);
-      renderer.camera.at = new Vector3(0, 0, 0);
-      renderer.camera.up = new Vector3(0, 1, 0);
-      renderer.camera.frustum.fov = 60;
-      renderer.camera.frustum.aspect = width / height;
-      renderer.camera.frustum.near = 0.1;
-      renderer.camera.frustum.far = 1000;
+      // camera, frustum 설정 (up vector는 카메라 클래스 내부에서 자동 계산)
+      const camera = new Camera(
+        new Vector3(0, 0, 50), // eye
+        new Vector3(0, 0, 0), // at
+        new Frustum(60, width / height, 0.1, 1000), // frustum
+      );
+
+      // light 설정
+      const light = new Light(
+        new Vector3(1, 1, 1), // direction
+        new Color(60, 140, 220), // color (black)
+        0.2, // ambientIntensity
+      );
+      /*const material = new Material(
+        new Color(200, 100, 50), // diffuseColor
+        new Color(255, 255, 255), // specularColor
+        16, // shininess
+      ); */
 
       renderer.clear(245, 245, 245);
-      renderer.render(renderObject);
+      renderer.shadingType = "phong";
+      renderer.render(renderObject, camera, light);
 
       // --------------------------------------------------------
 
