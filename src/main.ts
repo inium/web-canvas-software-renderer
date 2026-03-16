@@ -95,8 +95,8 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
             useTexture: true,
             texture: true,
             translation: { x: 0, y: 0, z: 0 },
-            rotation: { x: -10, y: -90, z: 0 },
-            scale: { x: 0.1, y: 0.1, z: 0.1 },
+            rotation: { x: 0, y: 0, z: 0 },
+            scale: { x: 1, y: 1, z: 1 },
         },
         camera: {
             eye: { x: 0, y: 0, z: 50 },
@@ -127,6 +127,7 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
                     // Load 시 기본 모델 Transformation 설정
                     this.model.translation = { x: 0, y: 0, z: 0 };
                     this.model.rotation = { x: 0, y: -90, z: 0 };
+                    // this.model.rotation = { x: 0, y: 0, z: 0 };
                     this.model.scale = { x: 0.1, y: 0.1, z: 0.1 };
 
                     // 텍스처 사용 여부 설정
