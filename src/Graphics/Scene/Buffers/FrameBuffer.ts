@@ -149,7 +149,11 @@ export default class FrameBuffer {
      * @return {ImageData} 이미지 데이터
      */
     getImageData(): ImageData {
-        return new ImageData(this._buffer, this.width, this.height);
+        return new ImageData(
+            Uint8ClampedArray.from(this._buffer),
+            this.width,
+            this.height,
+        );
     }
 
     /**
