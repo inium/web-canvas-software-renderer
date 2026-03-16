@@ -543,10 +543,14 @@ export default class Renderer {
         const edge2 = v2.subtract(v0);
         const normal = edge1.cross(edge2);
 
-        // view space에서 카메라 위치는 (0,0,0)
-        const viewDir = new Vector3(0, 0, 0).subtract(v0);
+        // 삼각형 중심 기준으로 카메라 방향 계산
+        const center = new Vector3(
+            (v0.x + v1.x + v2.x) / 3,
+            (v0.y + v1.y + v2.y) / 3,
+            (v0.z + v1.z + v2.z) / 3,
+        );
+        const viewDir = new Vector3(0, 0, 0).subtract(center);
 
-        // winding 규약에 따라 부호가 반대일 수 있음
         return normal.dot(viewDir) > 0;
     }
 
