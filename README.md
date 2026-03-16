@@ -4,6 +4,8 @@
 
 GPU(WebGL)를 사용하지 않고 렌더링 파이프라인(Rendering Pipeline)을 코드로 직접 구현하여 이미지 버퍼(배열)에 픽셀 데이터를 생성하고, 그 결과를 HTML Canvas에 렌더링합니다.
 
+![Screenshot](./screenshot.png)
+
 ## 구현 항목
 
 3D 모델을 2D 이미지에 출력하는 과정인 Rendering Pipeline Process을 구현했으며 주요 구현 항목은 아래와 같습니다.
@@ -54,13 +56,13 @@ Model → World → View → Backspace Culling → Shading → Clipping → Proj
 프로젝트를 Clone한 후 다음 명령어로 개발 환경을 실행할 수 있습니다.
 
 ```bash
-> npm run dev
+npm run dev
 ```
 
 코드 규칙이 정상적으로 동작하지 않을 경우 아래 명령어를 실행하세요.
 
 ```bash
-> npm run prepare
+npm run prepare
 ```
 
 ### 빌드
@@ -68,7 +70,7 @@ Model → World → View → Backspace Culling → Shading → Clipping → Proj
 다음 명령어로 프로젝트를 빌드할 수 있습니다. 빌드 결과물은 /dist 폴더에서 확인할 수 있습니다.
 
 ```bash
-> npm run build
+npm run build
 ```
 
 ### LICENSE
