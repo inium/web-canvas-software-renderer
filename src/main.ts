@@ -179,8 +179,8 @@ async function bootstrap(
                     this.model.useTexture = true;
 
                     // 기본 Camera 설정
-                    this.camera.eye = { x: 0, y: -1, z: 60 };
-                    this.camera.at = { x: 0, y: -1, z: 0 };
+                    this.camera.eye = { x: 0, y: 0, z: 60 };
+                    this.camera.at = { x: 0, y: 0, z: 0 };
                     break;
 
                 // 얼룩말 모델 (Zebra)
