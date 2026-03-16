@@ -4,6 +4,8 @@
 
 GPU(WebGL)를 사용하지 않고 렌더링 파이프라인(Rendering Pipeline)을 코드로 직접 구현하여 이미지 버퍼(배열)에 픽셀 데이터를 생성하고, 그 결과를 HTML Canvas에 렌더링합니다.
 
+데모페이지: https://inium.github.io/web-canvas-software-renderer/dist/
+
 ![Screenshot](./screenshot.png)
 
 ## 구현 항목
