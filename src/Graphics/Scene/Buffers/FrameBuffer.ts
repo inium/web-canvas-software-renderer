@@ -120,6 +120,7 @@ export default class FrameBuffer {
      * @param {number} x        X 좌표
      * @param {number} y        Y 좌표
      * @return {Color | null}   해당 좌표의 색상 (좌표가 범위를 벗어날 경우 null 반환)
+     * @throws {Error}          좌표가 버퍼 범위를 벗어날 경우 에러 발생
      */
     getPixel(x: number, y: number): Color | null {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
@@ -140,6 +141,15 @@ export default class FrameBuffer {
         }
 
         return null;
+    }
+
+    /**
+     * 이미지 데이터 반환
+     *
+     * @return {ImageData} 이미지 데이터
+     */
+    getImageData(): ImageData {
+        return new ImageData(this._buffer, this.width, this.height);
     }
 
     /**
@@ -172,9 +182,13 @@ export default class FrameBuffer {
     /**
      * 버퍼 반환
      *
-     * @return {Uint8ClampedArray | null} 버퍼
+     * @return {Uint8ClampedArray} 버퍼
      */
-    get buffer(): Uint8ClampedArray | null {
+    get buffer(): Uint8ClampedArray {
+        if (!this._buffer) {
+            throw new Error("FrameBuffer buffer is not initialized.");
+        }
+
         return this._buffer;
     }
 }

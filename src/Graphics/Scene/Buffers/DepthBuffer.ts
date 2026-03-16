@@ -51,8 +51,6 @@ export default class DepthBuffer {
             this.width * this.height * this.sampleLevel * this.sampleLevel,
         );
 
-        // console.log(this._buffer.length);
-
         this.clear();
     }
 
@@ -130,6 +128,85 @@ export default class DepthBuffer {
             sx;
 
         return this._buffer[Math.trunc(index)];
+    }
+
+    /**
+     * 깊이 버퍼를 시각화하기 위한 ImageData 생성
+     *
+     * - 깊이 값을 0-255 범위로 정규화하여 흑백 이미지로 표현
+     * - 가까운 픽셀은 밝게, 먼 픽셀은 어둡게 표시
+     * - 깊이 값이 유효하지 않은 경우(예: 양의 무한대) 검정색으로 처리
+     *
+     * @return {ImageData} 깊이 버퍼를 시각화한 ImageData 객체
+     */
+    getImageData(): ImageData {
+        const data = new Uint8ClampedArray(this.width * this.height * 4);
+
+        // 1. 유효한 depth값의 min/max 수집
+        let minDepth = Number.POSITIVE_INFINITY;
+        let maxDepth = Number.NEGATIVE_INFINITY;
+
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                for (let sy = 0; sy < this.sampleLevel; sy++) {
+                    for (let sx = 0; sx < this.sampleLevel; sx++) {
+                        const d = this.getPixel(x, y, sx, sy);
+                        if (d === null || d === Number.POSITIVE_INFINITY) {
+                            continue;
+                        }
+
+                        if (d < minDepth) {
+                            minDepth = d;
+                        }
+                        if (d > maxDepth) {
+                            maxDepth = d;
+                        }
+                    }
+                }
+            }
+        }
+
+        const depthRange = maxDepth - minDepth;
+
+        // 2. 정규화 후 시각화
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                let minSampleDepth = Number.POSITIVE_INFINITY;
+
+                for (let sy = 0; sy < this.sampleLevel; sy++) {
+                    for (let sx = 0; sx < this.sampleLevel; sx++) {
+                        const d = this.getPixel(x, y, sx, sy);
+                        if (d !== null && d < minSampleDepth) {
+                            minSampleDepth = d;
+                        }
+                    }
+                }
+
+                let colorValue: number;
+
+                if (
+                    minSampleDepth === Number.POSITIVE_INFINITY ||
+                    depthRange === 0
+                ) {
+                    // 배경 → 검정색
+                    colorValue = 0;
+                } else {
+                    // 가까울수록 밝게(255), 멀수록 어둡게(0)
+                    const normalized =
+                        1 - (minSampleDepth - minDepth) / depthRange;
+
+                    colorValue = Math.floor(normalized * 255);
+                }
+
+                const index = (y * this.width + x) * 4;
+                data[index] = colorValue;
+                data[index + 1] = colorValue;
+                data[index + 2] = colorValue;
+                data[index + 3] = 255;
+            }
+        }
+
+        return new ImageData(data, this.width, this.height);
     }
 
     /**
