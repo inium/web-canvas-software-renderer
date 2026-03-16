@@ -1,4 +1,6 @@
 import Color from "../Common/Color";
+import type Texture from "./Texture";
+
 export default class Material {
     /**
      * 알베도 (Albedo) 색상
@@ -38,6 +40,15 @@ export default class Material {
     emissionStrength: number = 0.0;
 
     /**
+     * 텍스처 (선택적)
+     * - 텍스처가 있는 경우, 알베도 색상 대신 텍스처 샘플링된 색상이 사용됨
+     * - 텍스처가 없는 경우, 알베도 색상이 사용됨
+     *
+     * @type {Texture | null}
+     */
+    texture: Texture | null = null;
+
+    /**
      * Creates an instance of Material.
      *
      * @constructor
@@ -47,6 +58,7 @@ export default class Material {
      * @param {number} specularStrength 정반사 반응 계수
      * @param {number} shininess 정반사 지수 (Shininess)
      * @param {number} emissionStrength 자체 발광 계수
+     * @param {Texture | null} texture 텍스처 (선택적)
      */
     constructor(
         albedo: Color = new Color(255, 255, 255),
@@ -55,6 +67,7 @@ export default class Material {
         specularStrength: number = 0.35,
         shininess: number = 16.0,
         emissionStrength: number = 0.0,
+        texture: Texture | null = null,
     ) {
         this.setValues(
             albedo,
@@ -63,6 +76,7 @@ export default class Material {
             specularStrength,
             shininess,
             emissionStrength,
+            texture,
         );
     }
 
@@ -75,6 +89,7 @@ export default class Material {
      * @param {number} specularStrength 정반사 반응 계수
      * @param {number} shininess 정반사 지수 (Shininess)
      * @param {number} emissionStrength 자체 발광 계수
+     * @param {Texture | null} texture 텍스처 (선택적)
      * @return {void}
      */
     setValues(
@@ -84,6 +99,7 @@ export default class Material {
         specularStrength: number,
         shininess: number,
         emissionStrength: number = 0.0,
+        texture: Texture | null = null,
     ): void {
         this.albedo = albedo;
         this.ambientStrength = Math.max(0, ambientStrength);
@@ -91,5 +107,16 @@ export default class Material {
         this.specularStrength = Math.max(0, specularStrength);
         this.shininess = Math.max(1, shininess);
         this.emissionStrength = Math.max(0, emissionStrength);
+        this.texture = texture;
+    }
+
+    /**
+     * 텍스처 설정
+     *
+     * @param {Texture} texture 텍스처 객체
+     * @return {void}
+     */
+    setTexture(texture: Texture): void {
+        this.texture = texture;
     }
 }
