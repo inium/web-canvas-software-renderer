@@ -13,7 +13,12 @@ import type Mesh from "./Graphics/Mesh/Mesh";
 /**
  * 렌더링 샘플 오브젝트 타입
  */
-export type SampleRenderObjectType = "tiger" | "teapot" | "windmill" | "bunny";
+export type SampleRenderObjectType =
+    | "tiger"
+    | "teapot"
+    | "bunny"
+    | "buddha"
+    | "zebra";
 
 export default class Pipeline {
     /**
@@ -97,12 +102,16 @@ export default class Pipeline {
                 await this.loadTeapotRenderObject();
                 break;
 
-            case "windmill":
-                await this.loadWindmillRenderObject();
-                break;
-
             case "bunny":
                 await this.loadBunnyRenderObject();
+                break;
+
+            case "buddha":
+                await this.loadBuddhaRenderObject();
+                break;
+
+            case "zebra":
+                await this.loadZebraRenderObject();
                 break;
 
             default:
@@ -244,15 +253,27 @@ export default class Pipeline {
     }
 
     /**
-     * 풍차(Windmill) 모델을 로드하여 RenderObject로 반환하는 비동기 함수
+     * 토끼(Bunny) 모델을 로드하여 RenderObject로 반환하는 비동기 함수
      *
      * @private
      * @return {Promise<void>} 비동기 작업 완료를 나타내는 Promise
      */
-    private async loadWindmillRenderObject(): Promise<void> {
-        const path: string = "../public/models/windmill/windmill.obj";
-        const texturePath: string =
-            "../public/models/windmill/windmill_001_lopatky_COL.jpg";
+    private async loadBunnyRenderObject(): Promise<void> {
+        const path: string = "../public/models/bunny/bunny.obj";
+        const texturePath: string = "../public/models/bunny/bunny-atlas.jpg";
+
+        const texture: Texture = await Texture.fromUrl(texturePath);
+        const mesh: Mesh = await ObjLoader.load(path);
+
+        this._renderObject = null;
+
+        this._renderObject = new RenderObject(mesh);
+        this._renderObject.material.setTexture(texture);
+    }
+
+    private async loadBuddhaRenderObject(): Promise<void> {
+        const path: string = "../public/models/buddha/buddha.obj";
+        const texturePath: string = "../public/models/buddha/buddha-atlas.jpg";
 
         const texture: Texture = await Texture.fromUrl(texturePath);
         const mesh: Mesh = await ObjLoader.load(path);
@@ -264,14 +285,14 @@ export default class Pipeline {
     }
 
     /**
-     * 토끼(Bunny) 모델을 로드하여 RenderObject로 반환하는 비동기 함수
+     * 얼룩말(Zebra) 모델을 로드하여 RenderObject로 반환하는 비동기 함수
      *
      * @private
      * @return {Promise<void>} 비동기 작업 완료를 나타내는 Promise
      */
-    private async loadBunnyRenderObject(): Promise<void> {
-        const path: string = "../public/models/bunny/bunny.obj";
-        const texturePath: string = "../public/models/bunny/bunny-atlas.jpg";
+    private async loadZebraRenderObject(): Promise<void> {
+        const path: string = "../public/models/zebra/zebra.obj";
+        const texturePath: string = "../public/models/zebra/zebra-atlas.jpg";
 
         const texture: Texture = await Texture.fromUrl(texturePath);
         const mesh: Mesh = await ObjLoader.load(path);

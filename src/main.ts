@@ -111,7 +111,7 @@ async function bootstrap(
             frustum: { fov: 60, aspect: width / height, near: 0.1, far: 1000 },
         },
         light: {
-            direction: { x: 1, y: 1, z: 1 },
+            direction: { x: 1, y: 1, z: 20 },
             color: { r: 255, g: 255, b: 255 }, // color: { r: 60, g: 140, b: 220 },
             shading: "gouraud" as ShadingType,
         },
@@ -147,6 +147,50 @@ async function bootstrap(
                     this.camera.at = { x: 0, y: 0, z: 0 };
                     break;
 
+                // 토끼 모델 (Bunny)
+                case "bunny":
+                    // Load 시 기본 모델 Transformation 설정
+                    this.model.translation = { x: 0, y: 0, z: 0 };
+                    this.model.rotation = { x: 0, y: 0, z: 0 };
+                    this.model.scale = { x: 0.1, y: 0.1, z: 0.1 };
+
+                    this.model.useTexture = true;
+
+                    // 기본 Camera 설정
+                    this.camera.eye = { x: 0, y: 0, z: 70 };
+                    this.camera.at = { x: 0, y: 0, z: 0 };
+                    break;
+
+                // 부처 모델 (Buddha)
+                case "buddha":
+                    // Load 시 기본 모델 Transformation 설정
+                    this.model.translation = { x: 0, y: 0, z: 0 };
+                    this.model.rotation = { x: -90, y: 0, z: 0 };
+                    this.model.scale = { x: 0.1, y: 0.1, z: 0.1 };
+
+                    // Utah Teapot 모델은 텍스처가 없으므로 텍스처 사용 비활성화
+                    this.model.useTexture = true;
+
+                    // 기본 Camera 설정
+                    this.camera.eye = { x: 0, y: -1, z: 60 };
+                    this.camera.at = { x: 0, y: -1, z: 0 };
+                    break;
+
+                // 얼룩말 모델 (Zebra)
+                case "zebra":
+                    // Load 시 기본 모델 Transformation 설정
+                    this.model.translation = { x: 0, y: 0, z: 0 };
+                    this.model.rotation = { x: -90, y: 90, z: 0 };
+                    this.model.scale = { x: 0.1, y: 0.1, z: 0.1 };
+
+                    // Utah Teapot 모델은 텍스처가 없으므로 텍스처 사용 비활성화
+                    this.model.useTexture = true;
+
+                    // 기본 Camera 설정
+                    this.camera.eye = { x: 0, y: 2, z: 50 };
+                    this.camera.at = { x: 0, y: 2, z: 0 };
+                    break;
+
                 // 찻주전자 모델 (Stanford University에서 제공하는 "Utah Teapot" 모델)
                 case "teapot":
                     // Load 시 기본 모델 Transformation 설정
@@ -160,34 +204,6 @@ async function bootstrap(
                     // 기본 Camera 설정
                     this.camera.eye = { x: 0, y: 2, z: 6 };
                     this.camera.at = { x: 0, y: 2, z: 0 };
-                    break;
-
-                // 풍차 모델
-                case "windmill":
-                    // Load 시 기본 모델 Transformation 설정
-                    this.model.translation = { x: 0, y: 0, z: 0 };
-                    this.model.rotation = { x: 0, y: -90, z: 0 };
-                    this.model.scale = { x: 1, y: 1, z: 1 };
-
-                    this.model.useTexture = true;
-
-                    // 기본 Camera 설정
-                    this.camera.eye = { x: 0, y: 0, z: 15 };
-                    this.camera.at = { x: 0, y: 5, z: 0 };
-                    break;
-
-                // 토끼 모델 (Bunny)
-                case "bunny":
-                    // Load 시 기본 모델 Transformation 설정
-                    this.model.translation = { x: 0, y: 0, z: 0 };
-                    this.model.rotation = { x: 0, y: 0, z: 0 };
-                    this.model.scale = { x: 0.1, y: 0.1, z: 0.1 };
-
-                    this.model.useTexture = true;
-
-                    // 기본 Camera 설정
-                    this.camera.eye = { x: 0, y: 0, z: 70 };
-                    this.camera.at = { x: 0, y: 0, z: 0 };
                     break;
 
                 default:
