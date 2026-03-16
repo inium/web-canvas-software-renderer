@@ -46,6 +46,22 @@ export default class Frustum {
     }
 
     /**
+     * 프러스텀 정보 설정
+     *
+     * @param {number} fov    시야각 (Field of View)
+     * @param {number} aspect 종횡비 (Aspect Ratio)
+     * @param {number} near   근평면 거리 (Near Plane Distance)
+     * @param {number} far    원평면 거리 (Far Plane Distance)
+     * @return {void}
+     */
+    setValues(fov: number, aspect: number, near: number, far: number): void {
+        this.fov = fov;
+        this.aspect = aspect;
+        this.near = near;
+        this.far = far;
+    }
+
+    /**
      * 원근 투영 행렬 계산
      *
      * @returns {Matrix4x4} 원근 투영 행렬
