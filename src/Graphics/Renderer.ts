@@ -1,4 +1,5 @@
 import BufferSet from "./Scene/Buffers/BufferSet";
+import Vector2 from "./Math/Vector2";
 import Vector3 from "./Math/Vector3";
 import Vector4 from "./Math/Vector4";
 import Camera from "./Scene/Camera";
@@ -8,7 +9,6 @@ import MathUtil from "./Math/Util";
 import Plane from "./Math/Plane";
 import Point from "./Geometry/Point";
 import Color from "./Common/Color";
-import Vector2 from "./Math/Vector2";
 import Triangle from "./Geometry/Triangle";
 import Light from "./Scene/Light";
 import Material from "./Scene/Material";
@@ -27,12 +27,16 @@ export type ShadingType = "phong" | "gouraud" | "flat";
  * - vp: view space에서의 위치 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
  * - vn: view space에서의 법선 벡터 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
  * - intensity: 조명 계산 결과로 나온 밝기 (0-1 사이의 값)
+ * - uv: 텍스처 좌표 (Vector2, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 텍스처 매핑할 때 사용)
+ * - invW: perspective-correct UV 보간용 - 원래는 w의 역수이지만, perspective correction을 위해 래스터라이제이션 단계에서 보간할 때 사용
  */
 type PointSet = {
     p: Point;
     vp: Vector3;
     vn: Vector3;
     intensity: number;
+    uv: Vector2;
+    invW: number;
 };
 
 /**
@@ -41,12 +45,14 @@ type PointSet = {
  * - vp: view space에서의 위치 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
  * - vn: view space에서의 법선 벡터 (Vector3, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 조명 계산할 때 사용)
  * - intensity: 조명 계산 결과로 나온 밝기 (0-1 사이의 값)
+ * - uv: 텍스처 좌표 (Vector2, 래스터라이제이션 단계에서 보간하여 픽셀 단위로 텍스처 매핑할 때 사용)
  */
 type ClipVertex = {
     clip: Vector4;
     vp: Vector3;
     vn: Vector3;
     intensity: number;
+    uv: Vector2;
 };
 
 /**
@@ -142,7 +148,12 @@ export default class Renderer {
      * @param {Light} light 렌더링에 사용할 광원
      * @return {void}
      */
-    render(renderObject: RenderObject, camera: Camera, light: Light): void {
+    render(
+        renderObject: RenderObject,
+        camera: Camera,
+        light: Light,
+        useTexture: boolean = true,
+    ): void {
         const modelMatrix = renderObject.transformation.modelMatrix();
         const viewMatrix = camera.viewMatrix() || Matrix4x4.identity();
         const projectionMatrix =
@@ -188,18 +199,24 @@ export default class Renderer {
                 vp: v0View,
                 vn: n0View,
                 intensity: 1.0,
+                uv: v0.uv, // flat, gouraud 셰이딩에서는 미사용
+                invW: 1 / view0.w, // flat, gouraud 셰이딩에서는 미사용
             };
             const s1: PointSet = {
                 p: new Point(new Vector2(0, 0), 0, baseColor),
                 vp: v1View,
                 vn: n1View,
                 intensity: 1.0,
+                uv: v1.uv, // flat, gouraud 셰이딩에서는 미사용
+                invW: 1 / view1.w, // flat, gouraud 셰이딩에서는 미사용
             };
             const s2: PointSet = {
                 p: new Point(new Vector2(0, 0), 0, baseColor),
                 vp: v2View,
                 vn: n2View,
                 intensity: 1.0,
+                uv: v2.uv, // flat, gouraud 셰이딩에서는 미사용
+                invW: 1 / view2.w, // flat, gouraud 셰이딩에서는 미사용
             };
 
             let i0 = 1.0;
@@ -216,10 +233,11 @@ export default class Renderer {
             const clip1 = this.transformPoint(mvp, v1.position);
             const clip2 = this.transformPoint(mvp, v2.position);
 
+            // prettier-ignore
             const clipped = this.clipTriangleWithAttributes([
-                { clip: clip0, vp: v0View, vn: n0View, intensity: i0 },
-                { clip: clip1, vp: v1View, vn: n1View, intensity: i1 },
-                { clip: clip2, vp: v2View, vn: n2View, intensity: i2 },
+                { clip: clip0, vp: v0View, vn: n0View, intensity: i0, uv: v0.uv },
+                { clip: clip1, vp: v1View, vn: n1View, intensity: i1, uv: v1.uv },
+                { clip: clip2, vp: v2View, vn: n2View, intensity: i2, uv: v2.uv },
             ]);
 
             if (clipped.length < 3) {
@@ -241,6 +259,8 @@ export default class Renderer {
                     vp: c[0].vp,
                     vn: c[0].vn,
                     intensity: c[0].intensity,
+                    uv: c[0].uv,
+                    invW: c[0].clip.w === 0 ? 0 : 1 / c[0].clip.w,
                 };
 
                 const p1: PointSet = {
@@ -252,6 +272,8 @@ export default class Renderer {
                     vp: c[1].vp,
                     vn: c[1].vn,
                     intensity: c[1].intensity,
+                    uv: c[1].uv,
+                    invW: c[1].clip.w === 0 ? 0 : 1 / c[1].clip.w,
                 };
 
                 const p2: PointSet = {
@@ -263,9 +285,11 @@ export default class Renderer {
                     vp: c[2].vp,
                     vn: c[2].vn,
                     intensity: c[2].intensity,
+                    uv: c[2].uv,
+                    invW: c[2].clip.w === 0 ? 0 : 1 / c[2].clip.w,
                 };
 
-                this.renderTriangle(p0, p1, p2, shadingSet);
+                this.renderTriangle(p0, p1, p2, shadingSet, useTexture);
             }
         }
     }
@@ -274,13 +298,19 @@ export default class Renderer {
      * 삼각형 래스터라이제이션 함수
      *
      * @private
-     * @param {Triangle} t 래스터라이제이션할 삼각형
+     * @param {PointSet} p0             삼각형의 첫 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {PointSet} p1             삼각형의 두 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {PointSet} p2             삼각형의 세 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {ShadingSet} shadingSet   셰이딩 계산에 필요한 정보 (모델뷰 행렬, 뷰 행렬, 광원 방향, 재질 등)
+     * @param {boolean} useTexture      텍스처 매핑 사용 여부 (기본값: true)
+     * @return {void}
      */
     private renderTriangle(
         p0: PointSet,
         p1: PointSet,
         p2: PointSet,
         shadingSet: ShadingSet,
+        useTexture: boolean = true,
     ): void {
         // calculate bounding box of the triangle
         const bbox = MathUtil.boundingBox2D([
@@ -318,6 +348,7 @@ export default class Renderer {
                     isTopLeft,
                     sampleLevel,
                     edgeEpsilon,
+                    useTexture,
                 );
             }
         }
@@ -338,6 +369,7 @@ export default class Renderer {
      * @param {boolean} isTopLeft       삼각형의 방향 (반시계: true, 시계: false)
      * @param {number} sampleLevel      MSAA 샘플링 레벨
      * @param {number} edgeEpsilon      엣지 근처에서의 수치적 안정성을 위한 작은 값 (기본값: 1e-6)
+     * @param {boolean} useTexture      텍스처 매핑 사용 여부 (기본값: false)
      * @return {void}
      */
     private sampleMsaa(
@@ -351,6 +383,7 @@ export default class Renderer {
         isTopLeft: boolean,
         sampleLevel: number,
         edgeEpsilon: number = 1e-6,
+        useTexture: boolean = false,
     ): void {
         const t = new Triangle(p0.p, p1.p, p2.p);
         let sampleCount = 0;
@@ -404,7 +437,18 @@ export default class Renderer {
                 if (depth < currentDepth) {
                     this.bufferSet.depthBuffer.setPixel(x, y, sx, sy, depth);
 
-                    const color = t.getColorAtBarycentric(a, b, c);
+                    const color = useTexture
+                        ? this.sampleSurfaceColor(
+                              a,
+                              b,
+                              c,
+                              p0,
+                              p1,
+                              p2,
+                              shadingSet,
+                          )
+                        : t.getColorAtBarycentric(a, b, c);
+
                     this.bufferSet.colorBuffer.setPixel(
                         x,
                         y,
@@ -564,6 +608,10 @@ export default class Renderer {
                         MathUtil.lerp(s.vn.z, e.vn.z, t),
                     ).normalize(),
                     intensity: MathUtil.lerp(s.intensity, e.intensity, t),
+                    uv: new Vector2(
+                        MathUtil.lerp(s.uv.x, e.uv.x, t),
+                        MathUtil.lerp(s.uv.y, e.uv.y, t),
+                    ),
                 });
 
                 if (sInside && eInside) {
@@ -841,6 +889,82 @@ export default class Renderer {
             Math.round((a.b * b.b) / 255),
             Math.round((a.a * b.a) / 255),
         );
+    }
+
+    /**
+     * 텍스처 매핑을 적용하여 픽셀의 최종 색상 계산
+     * - 재질에 텍스처가 있는 경우, 바리센트릭 좌표를 이용하여 텍스처 좌표를 보간하고, 텍스처에서 샘플링한 색상을 알베도와 광원 색상과 결합하여 최종 색상 계산
+     * - 재질에 텍스처가 없는 경우, 알베도와 광원 색상만 결합하여 최종 색상 계산
+     *
+     * @private
+     * @param {number} a                삼각형의 첫 번째 정점에 대한 바리센트릭 좌표
+     * @param {number} b                삼각형의 두 번째 정점에 대한 바리센트릭 좌표
+     * @param {number} c                삼각형의 세 번째 정점에 대한 바리센트릭 좌표
+     * @param {PointSet} p0             삼각형의 첫 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {PointSet} p1             삼각형의 두 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {PointSet} p2             삼각형의 세 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {ShadingSet} shadingSet   셰이딩 계산에 필요한 정보 (모델뷰 행렬, 뷰 행렬, 광원 방향, 재질 등)
+     * @returns {Color} 최종 픽셀 색상
+     */
+    private sampleSurfaceColor(
+        a: number,
+        b: number,
+        c: number,
+        p0: PointSet,
+        p1: PointSet,
+        p2: PointSet,
+        shadingSet: ShadingSet,
+    ): Color {
+        const base = this.combineColor(
+            shadingSet.material.albedo,
+            shadingSet.light.color,
+        );
+        const map = shadingSet.material.texture;
+
+        if (!map) {
+            return base;
+        }
+
+        const uv = this.interpolateUvPerspective(a, b, c, p0, p1, p2);
+        const texel = map.sampleNearest(uv.x, uv.y);
+
+        // albedo * lightColor * texel
+        return this.combineColor(base, texel);
+    }
+
+    /**
+     * 원근 보간을 이용하여 텍스처 좌표를 보간하는 함수
+     * - 바리센트릭 좌표와 각 정점의 invW 값을 이용하여 텍스처 좌표를 원근 보간 방식으로 계산
+     * - 보간된 텍스처 좌표는 0-1 범위로 반환
+     *
+     * @private
+     * @param {number} a                삼각형의 첫 번째 정점에 대한 바리센트릭 좌표
+     * @param {number} b                삼각형의 두 번째 정점에 대한 바리센트릭 좌표
+     * @param {number} c                삼각형의 세 번째 정점에 대한 바리센트릭 좌표
+     * @param {PointSet} p0             삼각형의 첫 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {PointSet} p1             삼각형의 두 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @param {PointSet} p2             삼각형의 세 번째 정점 정보 (화면 좌표, view space 위치, 법선 등)
+     * @returns {Vector2} 보간된 텍스처 좌표 (u, v)
+     */
+    private interpolateUvPerspective(
+        a: number,
+        b: number,
+        c: number,
+        p0: PointSet,
+        p1: PointSet,
+        p2: PointSet,
+    ): Vector2 {
+        const w0 = a * p0.invW;
+        const w1 = b * p1.invW;
+        const w2 = c * p2.invW;
+        const sum = w0 + w1 + w2;
+
+        if (sum === 0) return new Vector2(0, 0);
+
+        const u = (p0.uv.x * w0 + p1.uv.x * w1 + p2.uv.x * w2) / sum;
+        const v = (p0.uv.y * w0 + p1.uv.y * w1 + p2.uv.y * w2) / sum;
+
+        return new Vector2(u, v);
     }
 
     /**

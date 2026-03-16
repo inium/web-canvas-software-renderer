@@ -63,9 +63,9 @@ type ParamsStore = {
 async function bootstrap(canvasId: string, width: number, height: number): Promise<void> {
     const pipeline = new Pipeline(width, height);
 
-    const render = async (): Promise<void> => {
+    const render = async (useTexture: boolean = false): Promise<void> => {
         pipeline.update();
-        await pipeline.render();
+        await pipeline.render(useTexture);
 
         // render to canvas
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -106,8 +106,8 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
         },
         light: {
             direction: { x: 1, y: 1, z: 1 },
-            // color: { r: 255, g: 255, b: 255 },
-            color: { r: 60, g: 140, b: 220 },
+            color: { r: 255, g: 255, b: 255 },
+            // color: { r: 60, g: 140, b: 220 },
             shading: "gouraud" as ShadingType,
         },
 
@@ -126,7 +126,7 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
                 case "tiger":
                     // Load 시 기본 모델 Transformation 설정
                     this.model.translation = { x: 0, y: 0, z: 0 };
-                    this.model.rotation = { x: -10, y: -90, z: 0 };
+                    this.model.rotation = { x: 0, y: -90, z: 0 };
                     this.model.scale = { x: 0.1, y: 0.1, z: 0.1 };
 
                     // 텍스처 사용 여부 설정
@@ -148,7 +148,7 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
                     this.model.useTexture = false;
 
                     // 기본 Camera 설정
-                    this.camera.eye = { x: 0, y: 2, z: 10 };
+                    this.camera.eye = { x: 0, y: 2, z: 6 };
                     this.camera.at = { x: 0, y: 2, z: 0 };
                     break;
 
@@ -156,7 +156,7 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
                 case "windmill":
                     // Load 시 기본 모델 Transformation 설정
                     this.model.translation = { x: 0, y: 0, z: 0 };
-                    this.model.rotation = { x: 0, y: 0, z: 0 };
+                    this.model.rotation = { x: 0, y: -90, z: 0 };
                     this.model.scale = { x: 1, y: 1, z: 1 };
 
                     this.model.useTexture = true;
@@ -239,7 +239,7 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
             // 셰이딩 유형 업데이트
             pipeline.setShadingType(light.shading);
 
-            await render();
+            await render(this.model.useTexture && this.model.texture);
         },
     };
 

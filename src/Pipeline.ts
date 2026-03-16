@@ -7,6 +7,8 @@ import Vector3 from "./Graphics/Math/Vector3";
 import Color from "./Graphics/Common/Color";
 import RenderObject from "./Graphics/Scene/RenderObject";
 import ObjLoader from "./Graphics/Mesh/ObjLoader";
+import Texture from "./Graphics/Scene/Texture";
+import type Mesh from "./Graphics/Mesh/Mesh";
 
 /**
  * 렌더링 샘플 오브젝트 타입
@@ -192,14 +194,16 @@ export default class Pipeline {
     /**
      * 렌더링 실행
      *
-     * @return {Promise<void>}
+     * @param {boolean} useTexture  텍스처 매핑 사용 여부 (기본값: false)
+     * @return {Promise<void>}      비동기 작업 완료를 나타내는 Promise
      */
-    async render(): Promise<void> {
+    async render(useTexture: boolean = false): Promise<void> {
         if (this._renderObject) {
             this._renderer.render(
                 this._renderObject,
                 this._camera,
                 this._light,
+                useTexture,
             );
         }
     }
@@ -212,12 +216,15 @@ export default class Pipeline {
      */
     private async loadTigerRenderObject(): Promise<void> {
         const path: string = "../public/models/tiger/tiger.obj";
+        const texturePath: string = "../public/models/tiger/tiger-atlas.jpg";
 
-        const mesh = await ObjLoader.load(path);
+        const texture: Texture = await Texture.fromUrl(texturePath);
+        const mesh: Mesh = await ObjLoader.load(path);
 
         this._renderObject = null;
 
         this._renderObject = new RenderObject(mesh);
+        this._renderObject.material.setTexture(texture);
     }
 
     /**
@@ -229,7 +236,7 @@ export default class Pipeline {
     private async loadTeapotRenderObject(): Promise<void> {
         const path: string = "../public/models/teapot/teapot.obj";
 
-        const mesh = await ObjLoader.load(path);
+        const mesh: Mesh = await ObjLoader.load(path);
 
         this._renderObject = null;
 
@@ -244,12 +251,16 @@ export default class Pipeline {
      */
     private async loadWindmillRenderObject(): Promise<void> {
         const path: string = "../public/models/windmill/windmill.obj";
+        const texturePath: string =
+            "../public/models/windmill/windmill_001_lopatky_COL.jpg";
 
-        const mesh = await ObjLoader.load(path);
+        const texture: Texture = await Texture.fromUrl(texturePath);
+        const mesh: Mesh = await ObjLoader.load(path);
 
         this._renderObject = null;
 
         this._renderObject = new RenderObject(mesh);
+        this._renderObject.material.setTexture(texture);
     }
 
     /**
@@ -260,12 +271,15 @@ export default class Pipeline {
      */
     private async loadBunnyRenderObject(): Promise<void> {
         const path: string = "../public/models/bunny/bunny.obj";
+        const texturePath: string = "../public/models/bunny/bunny-atlas.jpg";
 
-        const mesh = await ObjLoader.load(path);
+        const texture: Texture = await Texture.fromUrl(texturePath);
+        const mesh: Mesh = await ObjLoader.load(path);
 
         this._renderObject = null;
 
         this._renderObject = new RenderObject(mesh);
+        this._renderObject.material.setTexture(texture);
     }
 
     /**
