@@ -19,7 +19,7 @@ import Material from "./Scene/Material";
  * - gouraud: 정점 단위로 조명 계산 후 보간 (중간 정도의 사실감과 계산량)
  * - phong: 픽셀 단위로 조명 계산 (가장 사실적이지만 계산량 많음)
  */
-export type ShaderType = "phong" | "gouraud" | "flat";
+export type ShadingType = "phong" | "gouraud" | "flat";
 
 /**
  * PointSet 타입 정의
@@ -79,15 +79,24 @@ export default class Renderer {
     private _height: number = 0;
 
     /**
+     * 샘플링 레벨 (예: 0, 2, 4)
+     * - MSAA 샘플링 레벨이 높을수록 앨리어싱이 줄어들지만 계산량이 증가함
+     * - 일반적으로 2x 또는 4x가 적절한 균형을 제공함
+     *
+     * @private
+     * @type {number}
+     */
+    private _sampleLevel: number = 2;
+
+    /**
      * 셰이딩 타입 (phong, gouraud, flat)
      * - flat: 삼각형 단위로 조명 계산 (가장 단순하지만 가장 덜 사실적)
      * - gouraud: 정점 단위로 조명 계산 후 보간 (중간 정도의 사실감과 계산량)
      * - phong: 픽셀 단위로 조명 계산 (가장 사실적이지만 계산량 많음)
      *
-     * @private
-     * @type {ShaderType}
+     * @type {ShadingType}
      */
-    private _shadingType: ShaderType = "phong";
+    shadingType: ShadingType = "phong";
 
     /**
      * 버퍼
@@ -107,6 +116,7 @@ export default class Renderer {
     constructor(width: number, height: number, sampleLevel: number = 2) {
         this._width = width;
         this._height = height;
+        this._sampleLevel = sampleLevel;
 
         // 버퍼 초기화
         this.bufferSet = new BufferSet(width, height, sampleLevel);
@@ -130,11 +140,10 @@ export default class Renderer {
      * @param {RenderObject} renderObject 렌더링할 객체
      * @param {Camera} camera 렌더링에 사용할 카메라
      * @param {Light} light 렌더링에 사용할 광원
-     * @param {Material} material 렌더링에 사용할 재질
      * @return {void}
      */
     render(renderObject: RenderObject, camera: Camera, light: Light): void {
-        const modelMatrix = renderObject.modelMatrix();
+        const modelMatrix = renderObject.transformation.modelMatrix();
         const viewMatrix = camera.viewMatrix() || Matrix4x4.identity();
         const projectionMatrix =
             camera.projectionMatrix() || Matrix4x4.identity();
@@ -498,83 +507,6 @@ export default class Renderer {
     }
 
     /**
-     * 삼각형을 클리핑하는 함수
-     * - Sutherland-Hodgman 클리핑 알고리즘
-     * - 입력된 삼각형의 정점이 클리핑 평면에 대해 모두 안쪽에 있으면 그대로 반환
-     * - 일부 정점이 평면 밖에 있으면 교차점을 계산하여 새로운 정점 배열을 반환 (최대 6개)
-     * - 클리핑 평면은 뷰 프러스텀의 6개 평면 (왼쪽, 오른쪽, 위, 아래, 앞, 뒤)으로 구성됨
-     * - 클리핑된 정점은 여전히 Clip Space 좌표계에 있음 (w 좌표는 그대로 유지)
-     * - 클리핑된 정점은 이후에 Perspective Divide와 Viewport Transform을 거쳐 화면 좌표로 변환됨
-     *
-     * @private
-     * @param {Vector4[]} vertices  클리핑할 삼각형의 정점 배열 (4D 벡터)
-     * @returns {Vector4[]}         클리핑된 정점 배열 (최대 6개)
-     */
-    private clipTriangle(vertices: Vector4[]): Vector4[] {
-        const planes: Plane[] = [
-            new Plane(1, 0, 0, 1), // x >= -w
-            new Plane(-1, 0, 0, 1), // x <= w
-            new Plane(0, 1, 0, 1), // y >= -w
-            new Plane(0, -1, 0, 1), // y <= w
-            new Plane(0, 0, 1, 1), // z >= -w
-            new Plane(0, 0, -1, 1), // z <= w
-        ];
-
-        let output: Vector4[] = vertices;
-
-        for (const plane of planes) {
-            const input = output;
-            output = [];
-
-            if (input.length === 0) {
-                break;
-            }
-
-            for (let i = 0; i < input.length; i++) {
-                const s = input[i];
-                const e = input[(i + 1) % input.length];
-
-                const fs = plane.distanceToPoint(s);
-                const fe = plane.distanceToPoint(e);
-
-                const sInside = fs >= 0;
-                const eInside = fe >= 0;
-
-                // S inside, E inside: e만 추가
-                // S inside, E outside: 교차점만 추가
-                // S outside, E inside: 교차점 + e 추가
-                // S outside, E outside는 아무 것도 추가 안 함
-                if (sInside && eInside) {
-                    output.push(e);
-                } else if (sInside && !eInside) {
-                    const t = fs / (fs - fe);
-                    output.push(
-                        new Vector4(
-                            MathUtil.lerp(s.x, e.x, t),
-                            MathUtil.lerp(s.y, e.y, t),
-                            MathUtil.lerp(s.z, e.z, t),
-                            MathUtil.lerp(s.w, e.w, t),
-                        ),
-                    );
-                } else if (!sInside && eInside) {
-                    const t = fs / (fs - fe);
-                    output.push(
-                        new Vector4(
-                            MathUtil.lerp(s.x, e.x, t),
-                            MathUtil.lerp(s.y, e.y, t),
-                            MathUtil.lerp(s.z, e.z, t),
-                            MathUtil.lerp(s.w, e.w, t),
-                        ),
-                    );
-                    output.push(e);
-                }
-            }
-        }
-
-        return output;
-    }
-
-    /**
      * 클리핑된 삼각형의 정점에 뷰 공간에서의 위치, 법선, 조명 계산 결과 등 추가 정보를 포함하는 함수
      * - 클리핑된 정점은 여전히 Clip Space 좌표계에 있지만, 래스터라이제이션 단계에서 조명 계산을 위해 뷰 공간에서의 위치와 법선 정보도 함께 보관
      * - 클리핑된 정점의 위치와 법선은 원래 삼각형의 정점에서 보간하여 계산 (클리핑된 정점이 원래 정점과 교차점이므로, 교차점에서의 뷰 공간 위치와 법선을 보간하여 계산)
@@ -932,21 +864,12 @@ export default class Renderer {
     }
 
     /**
-     * 셰이딩 타입 설정
-     *
-     * @param {ShaderType} type 셰이딩 타입 (phong, gouraud, flat)
-     */
-    set shadingType(type: ShaderType) {
-        this._shadingType = type;
-    }
-
-    /**
-     * 셰이딩 타입 반환
+     * MSAA 샘플링 레벨 반환
      *
      * @readonly
-     * @type {ShaderType}
+     * @type {number}
      */
-    get shadingType(): ShaderType {
-        return this._shadingType;
+    get sampleLevel(): number {
+        return this._sampleLevel;
     }
 }
