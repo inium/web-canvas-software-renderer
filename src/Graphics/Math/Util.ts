@@ -40,4 +40,19 @@ export default class Util {
 
         return { minX, maxX, minY, maxY };
     }
+
+    /**
+     * 회전 각도를 0~360 범위로 정규화하는 함수
+     *
+     * @param {number} deg 회전 각도 (도 단위)
+     * @returns {number} 0~360 범위로 정규화된 회전 각도
+     */
+    static validateDegree(deg: number): number {
+        // 회전 값이 0~360 범위를 벗어나지 않도록 조정
+        let normalizedDeg = deg % 360;
+        if (normalizedDeg < 0) {
+            normalizedDeg += 360;
+        }
+        return normalizedDeg;
+    }
 }
