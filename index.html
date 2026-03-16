@@ -23,7 +23,6 @@
             <div class="flex w-full flex-col">
               <div class="font-semibold mb-4">Renderer Control Panel</div>
               <div class="join w-full">
-                <!-- @change="$store.params.apply()" -->
                 <input
                   class="join-item btn btn-sm flex-1"
                   type="radio"
@@ -33,7 +32,6 @@
                   value="framebuffer"
                   @input.debounce.10ms="$store.params.apply()"
                 />
-                <!-- @change="$store.params.apply()" -->
                 <input
                   class="join-item btn btn-sm flex-1"
                   type="radio"
@@ -69,7 +67,7 @@
                       class="toggle toggle-sm"
                       x-model="$store.params.model.texture"
                       @change="$store.params.apply()"
-                      :disabled="!$store.params.model.useTexture"
+                      :disabled="!$store.params.enableTexture()"
                     />
                   </div>
                 </div>

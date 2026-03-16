@@ -44,6 +44,9 @@ type ParamsStore = {
     // 모델 로드
     loadObject: () => Promise<void>;
 
+    // 텍스처 매핑 사용 여부
+    enableTexture(): boolean;
+
     // 렌더링 파라미터 적용 및 렌더링 업데이트
     apply: () => Promise<void>;
 };
@@ -109,9 +112,12 @@ async function bootstrap(
         },
         light: {
             direction: { x: 1, y: 1, z: 1 },
-            color: { r: 255, g: 255, b: 255 },
-            // color: { r: 60, g: 140, b: 220 },
+            color: { r: 255, g: 255, b: 255 }, // color: { r: 60, g: 140, b: 220 },
             shading: "gouraud" as ShadingType,
+        },
+
+        enableTexture(): boolean {
+            return this.model.useTexture && this.buffer === "framebuffer";
         },
 
         /**
@@ -262,7 +268,7 @@ async function bootstrap(
             pipeline.setShadingType(light.shading);
 
             await render(
-                this.model.useTexture && this.model.texture,
+                this.model.texture && this.enableTexture(),
                 this.buffer,
             );
         },
