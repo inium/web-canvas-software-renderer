@@ -65,6 +65,7 @@ export default class Transformation {
         );
         const s = Matrix4x4.scale(this.scale.x, this.scale.y, this.scale.z);
 
-        return t.multiply(rz).multiply(ry).multiply(rx).multiply(s);
+        // 모델 기준 로컬 좌표에서 회전: yaw(Y) -> pitch(X) -> roll(Z) 순으로 회전 적용
+        return t.multiply(ry).multiply(rx).multiply(rz).multiply(s);
     }
 }
