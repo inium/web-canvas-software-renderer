@@ -60,32 +60,35 @@ type ParamsStore = {
  * @param {number} height    Viewport Height
  * @return {Promise<void>}   비동기 작업 완료를 나타내는 Promise
  */
-async function bootstrap(canvasId: string, width: number, height: number): Promise<void> {
+async function bootstrap(
+    canvasId: string,
+    width: number,
+    height: number,
+): Promise<void> {
     const pipeline = new Pipeline(width, height);
 
-    const render = async (useTexture: boolean = false): Promise<void> => {
+    const render = async (
+        useTexture: boolean = false,
+        buffer: Buffers = "framebuffer",
+    ): Promise<void> => {
         pipeline.update();
         await pipeline.render(useTexture);
 
         // render to canvas
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         const imageCanvas = new ImageCanvas(canvas, width, height);
+        const ctx = imageCanvas.getContext();
 
-        // FrameBuffer -> ImageCanvas 복사
-        const frameBuffer = pipeline.renderer.bufferSet.frameBuffer;
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const c = frameBuffer.getPixel(x, y);
-                if (!c) {
-                    continue;
-                }
-
-                imageCanvas.setPixel(x, y, c.r, c.g, c.b, c.a ?? 255);
-            }
-        }
-
-        imageCanvas.render();
+        // FrameBuffer의 픽셀 데이터를 HTML5 Canvas로 복사하여 화면에 출력
+        ctx?.putImageData(
+            buffer === "framebuffer"
+                ? (pipeline.renderer.bufferSet.frameBuffer?.getImageData() ??
+                      new ImageData(width, height))
+                : (pipeline.renderer.bufferSet.depthBuffer?.getImageData() ??
+                      new ImageData(width, height)),
+            0,
+            0,
+        );
     };
 
     const paramStore: ParamsStore = {
@@ -102,7 +105,7 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
             eye: { x: 0, y: 0, z: 50 },
             at: { x: 0, y: 0, z: 0 },
             up: { x: 0, y: 1, z: 0 },
-            frustum: { fov: 60, aspect: width / height, near: 0.1, far: 100 },
+            frustum: { fov: 60, aspect: width / height, near: 0.1, far: 1000 },
         },
         light: {
             direction: { x: 1, y: 1, z: 1 },
@@ -186,9 +189,21 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
             }
 
             pipeline.setRenderObjectTransformation(
-                new Vector3(this.model.translation.x, this.model.translation.y, this.model.translation.z),
-                new Vector3(this.model.rotation.x, this.model.rotation.y, this.model.rotation.z),
-                new Vector3(this.model.scale.x, this.model.scale.y, this.model.scale.z),
+                new Vector3(
+                    this.model.translation.x,
+                    this.model.translation.y,
+                    this.model.translation.z,
+                ),
+                new Vector3(
+                    this.model.rotation.x,
+                    this.model.rotation.y,
+                    this.model.rotation.z,
+                ),
+                new Vector3(
+                    this.model.scale.x,
+                    this.model.scale.y,
+                    this.model.scale.z,
+                ),
             );
 
             await this.apply();
@@ -207,14 +222,16 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
         async apply(): Promise<void> {
             const model = this.model;
             const camera = this.camera;
-            const frustum = camera.frustum;
             const light = this.light;
 
             // 렌더링 객체의 변환 정보 업데이트
+            const pos = model.translation;
+            const rot = model.rotation;
+            const scale = model.scale;
             pipeline.setRenderObjectTransformation(
-                new Vector3(model.translation.x, model.translation.y, model.translation.z),
-                new Vector3(model.rotation.x, model.rotation.y, model.rotation.z),
-                new Vector3(model.scale.x, model.scale.y, model.scale.z),
+                new Vector3(pos.x, pos.y, pos.z),
+                new Vector3(rot.x, rot.y, rot.z),
+                new Vector3(scale.x, scale.y, scale.z),
             );
 
             // 카메라 업데이트 (eye, at / up은 자동 계산)
@@ -230,17 +247,24 @@ async function bootstrap(canvasId: string, width: number, height: number): Promi
             this.camera.up.z = up.z;
 
             // 프러스텀 업데이트
-            pipeline.setFrustum(frustum.fov, frustum.aspect, frustum.near, frustum.far);
+            const f = pipeline.camera.frustum;
+            pipeline.setFrustum(f.fov, f.aspect, f.near, f.far);
 
             // 조명 정보 업데이트
+            const lightDir = light.direction;
+
             pipeline.setLight(
-                new Vector3(light.direction.x, light.direction.y, light.direction.z),
+                new Vector3(lightDir.x, lightDir.y, lightDir.z),
                 new Color(light.color.r, light.color.g, light.color.b),
             );
+
             // 셰이딩 유형 업데이트
             pipeline.setShadingType(light.shading);
 
-            await render(this.model.useTexture && this.model.texture);
+            await render(
+                this.model.useTexture && this.model.texture,
+                this.buffer,
+            );
         },
     };
 
