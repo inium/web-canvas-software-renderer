@@ -116,6 +116,13 @@ async function bootstrap(
             shading: "gouraud" as ShadingType,
         },
 
+        /**
+         * 텍스처 매핑 사용 여부 반환
+         *
+         * - 모델이 텍스처를 사용하도록 설정되어 있고, 현재 버퍼가 프레임버퍼인 경우에만 true 반환
+         *
+         * @return {boolean} 텍스처 매핑 사용 여부
+         */
         enableTexture(): boolean {
             return this.model.useTexture && this.buffer === "framebuffer";
         },
