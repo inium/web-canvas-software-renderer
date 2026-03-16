@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Canvas Software Renderer</title>
+    <script type="module" crossorigin src="./assets/index-D_923oeV.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BE-1lHhY.css">
+  </head>
+  <body class="overflow-x-auto">
+    <div class="mx-auto my-4 w-7xl" x-data="{ scale: 1, grid: true }">
+      <div class="text-xl my-4">Web Canvas Software Renderer</div>
+
+      <div class="border border-base-300">
+        <div class="flex w-7xl">
+          <div class="h-192 w-5xl flex-none">
+            <canvas id="canvas" width="1024" height="768" class="canvas">
+              Your browser doesn't appear to support the HTML5
+              <code>&lt;canvas&gt;</code> element.
+            </canvas>
+          </div>
+
+          <div class="min-h-192 w-64 flex-none p-4">
+            <div class="flex w-full flex-col">
+              <div class="font-semibold mb-4">Renderer Control Panel</div>
+              <div class="join w-full">
+                <input
+                  class="join-item btn btn-sm flex-1"
+                  type="radio"
+                  name="buffer"
+                  aria-label="Frame Buffer"
+                  x-model="$store.params.buffer"
+                  value="framebuffer"
+                  @input.debounce.10ms="$store.params.apply()"
+                />
+                <input
+                  class="join-item btn btn-sm flex-1"
+                  type="radio"
+                  name="buffer"
+                  aria-label="Depth Buffer"
+                  x-model="$store.params.buffer"
+                  value="depthbuffer"
+                  @input.debounce.10ms="$store.params.apply()"
+                />
+              </div>
+
+              <div class="divider my-1 before:h-px after:h-px"></div>
+
+              <!-- Render Object Controls -->
+              <div class="text-sm">
+                <div class="mb-2 font-medium">Render Object</div>
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="text-sm">Model</div>
+                  <select class="select select-xs w-full" x-model="$store.params.model.model" @change="$store.params.loadObject()">
+                    <option value="tiger">Tiger</option>
+                    <option value="bunny">Bunny</option>
+                    <option value="buddha">Buddha</option>
+                    <option value="zebra">Zebra</option>
+                    <option value="teapot">Teapot</option>
+                  </select>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="text-sm">Texture</div>
+                  <div>
+                    <input
+                      type="checkbox"
+                      checked="checked"
+                      class="toggle toggle-sm"
+                      x-model="$store.params.model.texture"
+                      @change="$store.params.apply()"
+                      :disabled="!$store.params.enableTexture()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm tooltip" data-tip="Position (Translation)">Pos</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      min="-1000"
+                      max="1000"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.translation.x"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-1000"
+                      max="1000"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.translation.y"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-1000"
+                      max="1000"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.translation.z"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm tooltip" data-tip="Rotation">Rot</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      min="-1000"
+                      max="1000"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.rotation.x"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-1000"
+                      max="1000"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.rotation.y"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-1000"
+                      max="1000"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.rotation.z"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm tooltip" data-tip="Scale">Scl</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      step="0.1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.scale.x"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      step="0.1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.scale.y"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      step="0.1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.model.scale.z"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider my-1 before:h-px after:h-px"></div>
+
+              <!-- Camera Controls -->
+              <div class="text-sm">
+                <div class="mb-2 font-medium">Camera</div>
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm">Eye</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      min="-100"
+                      max="100"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.camera.eye.x"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-100"
+                      max="100"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.camera.eye.y"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-100"
+                      max="100"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.camera.eye.z"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm">At</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      min="-100"
+                      max="100"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.camera.at.x"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-100"
+                      max="100"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.camera.at.y"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="-100"
+                      max="100"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.camera.at.z"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm">Up</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      class="input input-xs w-14 rounded-sm"
+                      disabled
+                      x-model.number="$store.params.camera.up.x"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      class="input input-xs w-14 rounded-sm"
+                      disabled
+                      x-model.number="$store.params.camera.up.y"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      class="input input-xs w-14 rounded-sm"
+                      disabled
+                      x-model.number="$store.params.camera.up.z"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="w-12 text-sm">Frustum</div>
+                  <div class="flex flex-col space-y-2">
+                    <div class="flex space-x-4">
+                      <div class="w-12 text-sm font-light">Fov</div>
+                      <div>
+                        <input
+                          type="number"
+                          class="input input-xs w-14 rounded-sm"
+                          x-model.number="$store.params.camera.frustum.fov"
+                          @input.debounce.10ms="$store.params.apply()"
+                          min="0"
+                          max="180"
+                          step="1"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex space-x-4">
+                      <div class="w-12 text-sm font-light">Aspect</div>
+                      <div>
+                        <input
+                          type="number"
+                          class="input input-xs w-14 rounded-sm"
+                          x-model.number="$store.params.camera.frustum.aspect"
+                          @input.debounce.10ms="$store.params.apply()"
+                          min="0"
+                          max="1000"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                      <div class="w-12 text-sm font-light">Near</div>
+                      <div>
+                        <input
+                          type="number"
+                          class="input input-xs w-14 rounded-sm"
+                          x-model.number="$store.params.camera.frustum.near"
+                          @input.debounce.10ms="$store.params.apply()"
+                          min="0"
+                          max="1000"
+                          step="1"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex space-x-4">
+                      <div class="w-12 text-sm font-light">Far</div>
+                      <div>
+                        <input
+                          type="number"
+                          class="input input-xs w-14 rounded-sm"
+                          x-model.number="$store.params.camera.frustum.far"
+                          @input.debounce.10ms="$store.params.apply()"
+                          min="0"
+                          max="1000"
+                          step="1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider my-1 before:h-px after:h-px"></div>
+
+              <!-- Light & Shading Controls -->
+              <div class="text-sm">
+                <div class="mb-2 font-medium">Light & Shading</div>
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="text-sm tooltip" data-tip="Direction">Dir</div>
+                  <div>
+                    <div class="join space-x-1 pl-4">
+                      <input
+                        type="number"
+                        min="-100"
+                        max="100"
+                        step="1"
+                        class="input input-xs w-14 rounded-sm"
+                        x-model.number="$store.params.light.direction.x"
+                        @input.debounce.10ms="$store.params.apply()"
+                        min="-100"
+                        max="100"
+                        step="1"
+                      />
+                      <input
+                        type="number"
+                        min="-100"
+                        max="100"
+                        step="1"
+                        class="input input-xs w-14 rounded-sm"
+                        x-model.number="$store.params.light.direction.y"
+                        @input.debounce.10ms="$store.params.apply()"
+                        min="-100"
+                        max="100"
+                        step="1"
+                      />
+                      <input
+                        type="number"
+                        min="-100"
+                        max="100"
+                        step="1"
+                        class="input input-xs w-14 rounded-sm"
+                        x-model.number="$store.params.light.direction.z"
+                        @input.debounce.10ms="$store.params.apply()"
+                        min="-100"
+                        max="100"
+                        step="1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="text-sm">Color</div>
+                  <div class="join space-x-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="255"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.light.color.r"
+                      @input.debounce.10ms="$store.params.apply()"
+                      min="0"
+                      max="255"
+                      step="1"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="255"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.light.color.g"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="255"
+                      step="1"
+                      class="input input-xs w-14 rounded-sm"
+                      x-model.number="$store.params.light.color.b"
+                      @input.debounce.10ms="$store.params.apply()"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex justify-between space-x-2 my-2">
+                  <div class="text-sm">Shading</div>
+                  <select class="select select-xs w-28" x-model="$store.params.light.shading" @input.debounce.10ms="$store.params.apply()">
+                    <option value="flat">Flat</option>
+                    <option value="gouraud">Gouraud</option>
+                    <option value="phong">Phong</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
