@@ -2,7 +2,8 @@
 
 브라우저에서 동작하는 소프트웨어 렌더러(Software Renderer)입니다.
 
-WebGL를 사용하지 않고 렌더링 파이프라인(Rendering Pipeline)을 코드로 직접 구현하여 이미지 버퍼(배열)에 픽셀 데이터를 생성하고, 그 결과를 HTML Canvas에 렌더링합니다.
+GPU(WebGL)를 사용하지 않고 HTML Canvas와 TypeScript만으로 3D 렌더링 파이프라인(Rendering Pipeline)을 직접 구현했습니다.
+렌더링 결과는 이미지 버퍼(Frame Buffer)에 픽셀 데이터를 생성한 뒤 Canvas에 출력하는 방식으로 동작합니다.
 
 데모페이지: https://inium.github.io/web-canvas-software-renderer/dist/
 
