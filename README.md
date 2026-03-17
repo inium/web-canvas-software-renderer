@@ -21,8 +21,8 @@ Model → World → View → Backspace Culling → Shading → Clipping → Proj
 - Lighting: Ambient, Diffuse, Specular, Emission
 - Shading: Flat, Smooth(Gouraud, Phong)
 - Texture Mapping: Texture Load & Nearest Sampling
+- Mesh & Simple Obj Loader (+Calculate normal vector per each Vertex)
 - Math: Matrix, Vector, Plane, 기타 Utility
-- Mesh & Obj Loader
 
 ### 렌더링 모델 (.obj)
 
