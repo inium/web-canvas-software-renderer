@@ -43,19 +43,23 @@ type ParamsStore = {
         color: Color3; // (60, 140, 220)
         shading: ShadingType;
     };
-
     // 모델 로드
     loadObject: () => Promise<void>;
 
     // 텍스처 매핑 사용 여부
     enableTexture(): boolean;
 
-    // 렌더링 파라미터 적용 및 렌더링 업데이트
-    apply: () => Promise<void>;
+    // 렌더 루프 업데이트
+    update: () => void;
 
-    // 자동 렌더 루프 제어
-    startAutoRender: () => void;
-    stopAutoRender: () => void;
+    // 렌더링 파라미터 적용 및 렌더링 업데이트
+    render: () => Promise<void>;
+
+    // 렌더 루프 시작
+    startRenderLoop: () => void;
+
+    // 렌더 루프 중지
+    stopRenderLoop: () => void;
 };
 
 /**
@@ -79,30 +83,6 @@ async function bootstrap(
     let autoRenderHandle: number | null = null;
     let lastFrameTime = 0;
     let isAutoRendering = false;
-
-    const render = async (
-        useTexture: boolean = false,
-        buffer: Buffers = "framebuffer",
-    ): Promise<void> => {
-        pipeline.update();
-        await pipeline.render(useTexture);
-
-        // render to canvas
-        const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-        const imageCanvas = new ImageCanvas(canvas, width, height);
-        const ctx = imageCanvas.getContext();
-
-        // FrameBuffer의 픽셀 데이터를 HTML5 Canvas로 복사하여 화면에 출력
-        ctx?.putImageData(
-            buffer === "framebuffer"
-                ? (pipeline.renderer.bufferSet.frameBuffer?.getImageData() ??
-                      new ImageData(width, height))
-                : (pipeline.renderer.bufferSet.depthBuffer?.getImageData() ??
-                      new ImageData(width, height)),
-            0,
-            0,
-        );
-    };
 
     const paramStore: ParamsStore = {
         frameFps: 0,
@@ -148,6 +128,9 @@ async function bootstrap(
          * @return {Promise<void>} 비동기 작업 완료를 나타내는 Promise
          */
         async loadObject(): Promise<void> {
+            // 렌더링 루프 중지
+            this.stopRenderLoop();
+
             await pipeline.setRenderObject(this.model.model);
 
             switch (this.model.model) {
@@ -248,7 +231,19 @@ async function bootstrap(
                 ),
             );
 
-            await this.apply();
+            // 렌더 루프 시작
+            this.update();
+        },
+
+        /**
+         * 렌더 루프 업데이트
+         * - 렌더링 루프를 중지한 후 다시 시작하여 렌더링 업데이트
+         *
+         * @return {void}
+         */
+        update(): void {
+            this.stopRenderLoop();
+            this.startRenderLoop();
         },
 
         /**
@@ -261,7 +256,7 @@ async function bootstrap(
          *
          * @return {Promise<void>} 비동기 작업 완료를 나타내는 Promise
          */
-        async apply(): Promise<void> {
+        async render(): Promise<void> {
             const model = this.model;
             const camera = this.camera;
             const light = this.light;
@@ -303,13 +298,29 @@ async function bootstrap(
             // 셰이딩 유형 업데이트
             pipeline.setShadingType(light.shading);
 
-            await render(
-                this.model.texture && this.enableTexture(),
-                this.buffer,
-            );
+            const useTexture = this.model.texture && this.enableTexture();
 
-            // 자동 렌더 루프 시작
-            this.startAutoRender();
+            // 렌더링 업데이트 및 실행
+            pipeline.update();
+            await pipeline.render(useTexture);
+
+            // render to canvas
+            const canvas = document.getElementById(
+                canvasId,
+            ) as HTMLCanvasElement;
+            const imageCanvas = new ImageCanvas(canvas, width, height);
+            const ctx = imageCanvas.getContext();
+
+            // FrameBuffer의 픽셀 데이터를 HTML5 Canvas로 복사하여 화면에 출력
+            ctx?.putImageData(
+                this.buffer === "framebuffer"
+                    ? (pipeline.renderer.bufferSet.frameBuffer?.getImageData() ??
+                          new ImageData(width, height))
+                    : (pipeline.renderer.bufferSet.depthBuffer?.getImageData() ??
+                          new ImageData(width, height)),
+                0,
+                0,
+            );
         },
 
         /**
@@ -321,7 +332,7 @@ async function bootstrap(
          *
          * @return {void}
          */
-        startAutoRender(): void {
+        startRenderLoop(): void {
             if (autoRenderHandle !== null) {
                 return;
             }
@@ -343,7 +354,7 @@ async function bootstrap(
                 if (!isAutoRendering) {
                     isAutoRendering = true;
                     try {
-                        await this.apply();
+                        await this.render();
                     } finally {
                         isAutoRendering = false;
                     }
@@ -361,7 +372,7 @@ async function bootstrap(
          *
          * @return {void}
          */
-        stopAutoRender(): void {
+        stopRenderLoop(): void {
             this.frameFps = 0;
 
             if (autoRenderHandle !== null) {
