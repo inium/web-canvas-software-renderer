@@ -24,6 +24,8 @@ type ParamsStore = {
     autoRotate: boolean;
     autoRotateSpeed: number;
     buffer: Buffers;
+
+    // 모델 정보
     model: {
         model: SampleRenderObjectType;
         useTexture: boolean;
@@ -32,17 +34,22 @@ type ParamsStore = {
         rotation: Vec3;
         scale: Vec3;
     };
+
+    // 카메라 정보
     camera: {
         eye: Vec3;
         at: Vec3;
         up: Vec3;
         frustum: Frustum;
     };
+
+    // 조명 정보
     light: {
         direction: Vec3;
         color: Color3; // (60, 140, 220)
         shading: ShadingType;
     };
+
     // 모델 로드
     loadObject: () => Promise<void>;
 
@@ -284,7 +291,7 @@ async function bootstrap(
             this.camera.up.z = up.z;
 
             // 프러스텀 업데이트
-            const f = pipeline.camera.frustum;
+            const f = this.camera.frustum;
             pipeline.setFrustum(f.fov, f.aspect, f.near, f.far);
 
             // 조명 정보 업데이트
