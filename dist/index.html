@@ -17,8 +17,8 @@
     <meta property="og:description" content="웹 브라우저에서 동작하는 소프트웨어 렌더러" />
     <meta property="og:image" content="https://github.com/inium/web-canvas-software-renderer/blob/main/screenshot.png?raw=true" />
     <meta property="og:site_name" content="Web Canvas Software Renderer" />
-    <script type="module" crossorigin src="./assets/index-Ct68W8T5.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Bkv4K860.css">
+    <script type="module" crossorigin src="./assets/index-DtenHcJ6.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-NZ9a6oh7.css">
   </head>
   <body class="overflow-x-auto">
     <div class="mx-auto my-4 w-7xl" x-data="{ scale: 1, grid: true }">
@@ -45,7 +45,7 @@
                   aria-label="Frame Buffer"
                   x-model="$store.params.buffer"
                   value="framebuffer"
-                  @input="$store.params.update()"
+                  @input.debounce.10ms="$store.params.update()"
                 />
                 <input
                   class="join-item btn btn-sm flex-1"
@@ -54,7 +54,7 @@
                   aria-label="Depth Buffer"
                   x-model="$store.params.buffer"
                   value="depthbuffer"
-                  @input="$store.params.update()"
+                  @input.debounce.10ms="$store.params.update()"
                 />
               </div>
 
@@ -98,7 +98,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.translation.x"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -107,7 +107,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.translation.y"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -116,7 +116,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.translation.z"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
@@ -131,7 +131,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.rotation.x"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -140,7 +140,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.rotation.y"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -149,7 +149,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.rotation.z"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
@@ -164,7 +164,7 @@
                       step="0.1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.scale.x"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -173,7 +173,7 @@
                       step="0.1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.scale.y"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -182,7 +182,7 @@
                       step="0.1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.model.scale.z"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
@@ -203,7 +203,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.camera.eye.x"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -212,7 +212,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.camera.eye.y"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -221,7 +221,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.camera.eye.z"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
@@ -236,7 +236,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.camera.at.x"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -245,7 +245,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.camera.at.y"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -254,7 +254,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.camera.at.z"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
@@ -267,21 +267,21 @@
                       class="input input-xs w-14 rounded-sm"
                       disabled
                       x-model.number="$store.params.camera.up.x"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
                       class="input input-xs w-14 rounded-sm"
                       disabled
                       x-model.number="$store.params.camera.up.y"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
                       class="input input-xs w-14 rounded-sm"
                       disabled
                       x-model.number="$store.params.camera.up.z"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
@@ -296,7 +296,7 @@
                           type="number"
                           class="input input-xs w-14 rounded-sm"
                           x-model.number="$store.params.camera.frustum.fov"
-                          @input="$store.params.update()"
+                          @input.debounce.10ms="$store.params.update()"
                           min="0"
                           max="180"
                           step="1"
@@ -310,7 +310,7 @@
                           type="number"
                           class="input input-xs w-14 rounded-sm"
                           x-model.number="$store.params.camera.frustum.aspect"
-                          @input="$store.params.update()"
+                          @input.debounce.10ms="$store.params.update()"
                           min="0"
                           max="1000"
                           step="0.01"
@@ -325,7 +325,7 @@
                           type="number"
                           class="input input-xs w-14 rounded-sm"
                           x-model.number="$store.params.camera.frustum.near"
-                          @input="$store.params.update()"
+                          @input.debounce.10ms="$store.params.update()"
                           min="0"
                           max="1000"
                           step="1"
@@ -339,7 +339,7 @@
                           type="number"
                           class="input input-xs w-14 rounded-sm"
                           x-model.number="$store.params.camera.frustum.far"
-                          @input="$store.params.update()"
+                          @input.debounce.10ms="$store.params.update()"
                           min="0"
                           max="1000"
                           step="1"
@@ -366,7 +366,7 @@
                         step="1"
                         class="input input-xs w-14 rounded-sm"
                         x-model.number="$store.params.light.direction.x"
-                        @input="$store.params.update()"
+                        @input.debounce.10ms="$store.params.update()"
                         min="-100"
                         max="100"
                         step="1"
@@ -378,7 +378,7 @@
                         step="1"
                         class="input input-xs w-14 rounded-sm"
                         x-model.number="$store.params.light.direction.y"
-                        @input="$store.params.update()"
+                        @input.debounce.10ms="$store.params.update()"
                         min="-100"
                         max="100"
                         step="1"
@@ -390,7 +390,7 @@
                         step="1"
                         class="input input-xs w-14 rounded-sm"
                         x-model.number="$store.params.light.direction.z"
-                        @input="$store.params.update()"
+                        @input.debounce.10ms="$store.params.update()"
                         min="-100"
                         max="100"
                         step="1"
@@ -409,7 +409,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.light.color.r"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                       min="0"
                       max="255"
                       step="1"
@@ -421,7 +421,7 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.light.color.g"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                     <input
                       type="number"
@@ -430,14 +430,14 @@
                       step="1"
                       class="input input-xs w-14 rounded-sm"
                       x-model.number="$store.params.light.color.b"
-                      @input="$store.params.update()"
+                      @input.debounce.10ms="$store.params.update()"
                     />
                   </div>
                 </div>
 
                 <div class="flex justify-between space-x-2 my-2">
                   <div class="text-sm">Shading</div>
-                  <select class="select select-xs w-28" x-model="$store.params.light.shading" @input="$store.params.update()">
+                  <select class="select select-xs w-28" x-model="$store.params.light.shading" @input.debounce.10ms="$store.params.update()">
                     <option value="flat">Flat</option>
                     <option value="gouraud">Gouraud</option>
                     <option value="phong">Phong</option>
