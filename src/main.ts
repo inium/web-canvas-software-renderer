@@ -20,9 +20,7 @@ type Frustum = {
 };
 
 type ParamsStore = {
-    frameFps: number;
-    autoRotate: boolean;
-    autoRotateSpeed: number;
+    // 렌더링 버퍼 선택 (프레임버퍼 또는 뎁스버퍼)
     buffer: Buffers;
 
     // 모델 정보
@@ -61,12 +59,6 @@ type ParamsStore = {
 
     // 렌더링 파라미터 적용 및 렌더링 업데이트
     render: () => Promise<void>;
-
-    // 렌더 루프 시작
-    startRenderLoop: () => void;
-
-    // 렌더 루프 중지
-    stopRenderLoop: () => void;
 };
 
 /**
@@ -87,14 +79,8 @@ async function bootstrap(
     height: number,
 ): Promise<void> {
     const pipeline = new Pipeline(width, height);
-    let autoRenderHandle: number | null = null;
-    let lastFrameTime = 0;
-    let isAutoRendering = false;
 
     const paramStore: ParamsStore = {
-        frameFps: 0,
-        autoRotate: false,
-        autoRotateSpeed: 30,
         buffer: "framebuffer" as Buffers,
         model: {
             model: "tiger" as SampleRenderObjectType,
@@ -135,9 +121,6 @@ async function bootstrap(
          * @return {Promise<void>} 비동기 작업 완료를 나타내는 Promise
          */
         async loadObject(): Promise<void> {
-            // 렌더링 루프 중지
-            this.stopRenderLoop();
-
             await pipeline.setRenderObject(this.model.model);
 
             switch (this.model.model) {
@@ -249,8 +232,7 @@ async function bootstrap(
          * @return {void}
          */
         update(): void {
-            this.stopRenderLoop();
-            this.startRenderLoop();
+            this.render();
         },
 
         /**
@@ -328,64 +310,6 @@ async function bootstrap(
                 0,
                 0,
             );
-        },
-
-        /**
-         * 자동 렌더 루프 시작
-         *
-         * - requestAnimationFrame을 사용하여 렌더링 루프 구현
-         * - 프레임 간 시간(delta)을 계산하여 FPS 업데이트
-         * - autoRotate가 활성화된 경우 모델의 Y축 회전 업데이트
-         *
-         * @return {void}
-         */
-        startRenderLoop(): void {
-            if (autoRenderHandle !== null) {
-                return;
-            }
-
-            lastFrameTime = performance.now();
-
-            const loop = async (now: number): Promise<void> => {
-                const delta = now - lastFrameTime;
-                lastFrameTime = now;
-                this.frameFps = delta > 0 ? 1000 / delta : 0;
-
-                if (this.autoRotate) {
-                    const nextY =
-                        this.model.rotation.y +
-                        (this.autoRotateSpeed * delta) / 1000;
-                    this.model.rotation.y = ((nextY % 360) + 360) % 360;
-                }
-
-                if (!isAutoRendering) {
-                    isAutoRendering = true;
-                    try {
-                        await this.render();
-                    } finally {
-                        isAutoRendering = false;
-                    }
-                }
-
-                autoRenderHandle = requestAnimationFrame(loop);
-            };
-
-            autoRenderHandle = requestAnimationFrame(loop);
-        },
-
-        /**
-         * 자동 렌더 루프 중지
-         * - requestAnimationFrame으로 예약된 다음 프레임 콜백 취소
-         *
-         * @return {void}
-         */
-        stopRenderLoop(): void {
-            this.frameFps = 0;
-
-            if (autoRenderHandle !== null) {
-                cancelAnimationFrame(autoRenderHandle);
-                autoRenderHandle = null;
-            }
         },
     };
 

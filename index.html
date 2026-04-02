@@ -34,29 +34,6 @@
             <div class="flex w-full flex-col">
               <div class="mb-2 font-semibold">Renderer Control Panel</div>
 
-              <div class="mb-3 flex items-center justify-between text-xs">
-                <span>Frame Per Second (FPS): <span x-text="$store.params.frameFps.toFixed(1)"></span></span>
-              </div>
-              <div class="flex items-center justify-between text-xs">
-                <div>
-                  <span>Auto Rotate Y </span>
-                  <div class="text-xs">초당 <span x-text="$store.params.autoRotateSpeed"></span>° 회전</div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max="360"
-                    step="1"
-                    class="input input-xs w-16 rounded-sm"
-                    x-model.number="$store.params.autoRotateSpeed"
-                    :disabled="!$store.params.autoRotate"
-                  />
-                  <span>deg/s</span>
-                  <input type="checkbox" class="toggle toggle-sm" x-model="$store.params.autoRotate" />
-                </div>
-              </div>
-
               <div class="divider my-1 before:h-px after:h-px"></div>
 
               <div class="join w-full">
